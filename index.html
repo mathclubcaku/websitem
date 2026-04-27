@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Makale Arşivi</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root {
+  --bg:#F5F3EE;--surface:#FEFCF8;--surface2:#F0EDE6;--border:#D8D3C8;
+  --border2:#C4BEB1;--text:#1A1714;--text2:#5C5750;--text3:#9A9389;
+  --accent:#2B4A3F;--accent2:#3D6B5C;--accent-light:#E8F0EE;
+  --red:#7A2E2E;--red-light:#F5EBEB;--amber:#6B4A1A;--amber-light:#F5EFE3;
+  --blue:#1A3A5C;--blue-light:#E8EFF5;--green:#1A5C2A;--green-light:#E8F5EC;
+  --radius:6px;--radius-lg:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* HEADER */
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:52px;flex-shrink:0;z-index:100}
+.logo{font-family:'Crimson Pro',serif;font-size:19px;font-weight:600;color:var(--accent)}
+.logo span{color:var(--text3);font-weight:300;font-size:13px;margin-left:6px}
+.header-right{display:flex;align-items:center;gap:8px}
+.user-chip{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);padding:4px 10px;border:1px solid var(--border);border-radius:99px;background:var(--surface2)}
+.user-avatar{width:22px;height:22px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--accent);font-weight:600}
+
+/* BUTTONS */
+.btn{font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 13px;border-radius:var(--radius);border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent2);border-color:var(--accent2);color:#fff}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-danger{color:var(--red)}
+.btn-danger:hover{background:var(--red-light);border-color:#C5A0A0}
+
+/* LAYOUT */
+.app{display:flex;flex:1;overflow:hidden}
+
+/* SETUP / AUTH SCREENS */
+.screen{flex:1;display:flex;align-items:center;justify-content:center;padding:20px}
+.screen-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:40px 44px;max-width:500px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.06)}
+.screen-card h1{font-family:'Crimson Pro',serif;font-size:26px;font-weight:600;color:var(--accent);margin-bottom:6px}
+.screen-card p{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:20px}
+.steps{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+.step{display:flex;gap:12px;align-items:flex-start}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-text{font-size:12px;color:var(--text2);line-height:1.6}
+.step-text a{color:var(--accent);text-decoration:none}
+.step-text a:hover{text-decoration:underline}
+.step-text code{background:var(--surface2);padding:1px 5px;border-radius:3px;font-size:11px;font-family:'DM Mono',monospace}
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.form-group label{font-size:12px;font-weight:500;color:var(--text2)}
+.form-group input{font-family:'DM Sans',sans-serif;font-size:13px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text)}
+.form-group input:focus{outline:none;border-color:var(--accent2);box-shadow:0 0 0 2px rgba(61,107,92,.1)}
+.divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+
+/* LOADING */
+.loading-screen{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--text3)}
+.spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-msg{font-size:13px}
+
+/* LEFT PANEL */
+.panel-left{width:320px;min-width:320px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.panel-toolbar{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+#search{width:100%;padding:7px 11px;font-family:'DM Sans',sans-serif;font-size:12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text)}
+#search:focus{outline:none;border-color:var(--accent2)}
+#search::placeholder{color:var(--text3)}
+.filter-tabs{display:flex;gap:4px}
+.ftab{font-size:11px;padding:3px 9px;border-radius:99px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s}
+.ftab:hover{background:var(--surface2);color:var(--text2)}
+.ftab.active{background:var(--accent-light);color:var(--accent);border-color:#C0D4CE;font-weight:500}
+.paper-list{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:4px}
+.paper-item{padding:11px 12px;border-radius:var(--radius);border:1px solid transparent;cursor:pointer;transition:all .12s;position:relative}
+.paper-item:hover{background:var(--surface2)}
+.paper-item.active{background:var(--accent-light);border-color:#C0D4CE}
+.paper-item.active .pi-title{color:var(--accent)}
+.pi-title{font-family:'Crimson Pro',serif;font-size:14px;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pi-meta{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pi-status{font-size:10px;padding:1px 7px;border-radius:99px;font-weight:500}
+.s-toread{background:var(--amber-light);color:var(--amber)}
+.s-reading{background:var(--blue-light);color:var(--blue)}
+.s-done{background:var(--green-light);color:var(--green)}
+.pi-sync{font-size:10px;color:var(--text3);margin-left:auto}
+.empty-list{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty-list h3{font-family:'Crimson Pro',serif;font-size:18px;color:var(--text2);margin-bottom:6px;font-weight:400}
+.empty-list p{font-size:12px;line-height:1.6}
+
+/* RIGHT PANEL */
+.panel-right{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text3);gap:12px}
+.welcome-icon{width:64px;height:64px;background:var(--surface2);border:2px dashed var(--border2);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-size:28px}
+.welcome h2{font-family:'Crimson Pro',serif;font-size:20px;color:var(--text2);font-weight:400}
+.welcome p{font-size:13px}
+
+/* READER */
+.reader{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.reader-header{padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-shrink:0}
+.reader-info{flex:1;min-width:0}
+.reader-title{font-family:'Crimson Pro',serif;font-size:17px;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:3px}
+.reader-meta{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.reader-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.status-select{font-family:'DM Sans',sans-serif;font-size:11px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text2);cursor:pointer}
+.pdf-frame{flex:1;border:none;background:#525659}
+.no-pdf{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--text3);background:var(--surface2)}
+.no-pdf h3{font-family:'Crimson Pro',serif;font-size:18px;color:var(--text2);font-weight:400}
+.no-pdf p{font-size:12px}
+.pdf-loading{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;background:var(--surface2);color:var(--text3);font-size:13px}
+.notes-panel{border-top:1px solid var(--border);background:var(--surface);padding:10px 20px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.notes-label{font-size:11px;color:var(--text3);font-weight:500;flex-shrink:0}
+#notes-input{flex:1;font-family:'DM Sans',sans-serif;font-size:12px;border:1px solid var(--border);border-radius:var(--radius);padding:6px 10px;background:var(--bg);color:var(--text);resize:none;height:34px}
+#notes-input:focus{outline:none;border-color:var(--accent2)}
+
+/* SYNC BADGE */
+.sync-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 9px;border-radius:99px;border:1px solid var(--border);color:var(--text3);background:var(--surface2)}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--text3)}
+.sync-badge.syncing .sync-dot{background:var(--amber);animation:pulse .8s infinite}
+.sync-badge.synced .sync-dot{background:var(--green)}
+.sync-badge.error .sync-dot{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,8,6,.55);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius-lg);border:1px solid var(--border);width:540px;max-width:95vw;max-height:90vh;overflow-y:auto;padding:28px 30px;box-shadow:0 8px 40px rgba(0,0,0,.18)}
+.modal h2{font-family:'Crimson Pro',serif;font-size:22px;font-weight:600;color:var(--accent);margin-bottom:20px}
+.modal .form-group input,.modal .form-group select,.modal .form-group textarea{font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);transition:border-color .15s}
+.modal .form-group input:focus,.modal .form-group select:focus,.modal .form-group textarea:focus{outline:none;border-color:var(--accent2);box-shadow:0 0 0 2px rgba(61,107,92,.1)}
+.modal .form-group textarea{resize:vertical;min-height:60px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.drop-zone{border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:24px;text-align:center;cursor:pointer;transition:all .15s;margin-bottom:14px;background:var(--bg)}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent2);background:var(--accent-light)}
+.drop-zone.has-file{border-color:var(--accent);background:var(--accent-light)}
+.dz-icon{font-size:24px;margin-bottom:6px}
+.dz-text{font-size:13px;color:var(--text2)}
+.dz-text strong{color:var(--accent)}
+.dz-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--text);color:#fff;font-size:12px;padding:9px 16px;border-radius:var(--radius);opacity:0;transform:translateY(6px);transition:all .2s;pointer-events:none;z-index:2000;max-width:320px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.error-toast{background:var(--red)}
+
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- HEADER (hidden until app ready) -->
+<header id="main-header" style="display:none">
+  <div class="logo">Makale Arşivi <span id="hcount"></span></div>
+  <div class="header-right">
+    <div class="sync-badge" id="sync-badge"><div class="sync-dot"></div><span id="sync-text">—</span></div>
+    <div class="user-chip" id="user-chip">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <span id="user-name">—</span>
+      <button class="btn btn-sm" onclick="signOut()" style="border:none;padding:0;background:none;color:var(--text3)">çıkış</button>
+    </div>
+    <button class="btn btn-primary" onclick="openAddModal()">+ Makale Ekle</button>
+  </div>
+</header>
+
+<!-- SETUP SCREEN -->
+<div id="screen-setup" class="screen">
+  <div class="screen-card">
+    <h1>Makale Arşivi</h1>
+    <p>Google Drive ile senkronize edilen, tüm cihazlarınızda çalışan bir makale kütüphanesi. Başlamak için tek seferlik bir kurulum gerekiyor.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a>'a gidin →
+          <strong>Yeni Proje</strong> oluşturun (isim önemli değil).
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          Sol menü → <strong>API'ler ve Hizmetler → Kitaplık</strong> → <em>"Google Drive API"</em> arayın → <strong>Etkinleştir</strong>.
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <strong>OAuth izin ekranı</strong> → Dış → Uygulama adı girin → Kaydet.
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-text">
+          <strong>Kimlik Bilgileri → OAuth 2.0 İstemci Kimliği → Web uygulaması</strong>.
+          <br>
+          "Yetkili JavaScript kaynakları" bölümüne GitHub Pages adresinizi ekleyin:
+          <br><code>https://KULLANICI_ADI.github.io</code>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-text">Oluşturulan <strong>İstemci Kimliği</strong>'ni aşağıya yapıştırın.</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Google OAuth İstemci Kimliği</label>
+      <input id="client-id-input" type="text" placeholder="xxxxxxxxxxxx.apps.googleusercontent.com" autocomplete="off">
+    </div>
+    <button class="btn btn-primary" style="width:100%;padding:10px" onclick="saveClientId()">Kaydet ve Google ile Bağlan →</button>
+
+    <hr class="divider">
+    <p style="font-size:11px;color:var(--text3);line-height:1.6">
+      Bu uygulama yalnızca kendi oluşturduğu Drive dosyalarına erişir (<code>drive.file</code> yetkisi).
+      Mevcut dosyalarınızı okuyamaz veya değiştiremez.
+    </p>
+  </div>
+</div>
+
+<!-- AUTH SCREEN -->
+<div id="screen-auth" class="screen" style="display:none">
+  <div class="screen-card" style="text-align:center">
+    <div style="font-size:44px;margin-bottom:16px">📚</div>
+    <h1 style="margin-bottom:10px">Makale Arşivi</h1>
+    <p>Devam etmek için Google hesabınızla giriş yapın.<br>Verileriniz Drive'da güvende saklanır.</p>
+    <button class="btn btn-primary" style="width:100%;padding:11px;font-size:14px" onclick="signIn()">
+      Google ile Giriş Yap
+    </button>
+    <button class="btn btn-sm" style="margin-top:10px;color:var(--text3)" onclick="resetSetup()">İstemci kimliğini değiştir</button>
+  </div>
+</div>
+
+<!-- LOADING SCREEN -->
+<div id="screen-loading" class="screen" style="display:none">
+  <div style="text-align:center;color:var(--text3)">
+    <div class="spinner" style="margin:0 auto 12px"></div>
+    <div class="loading-msg" id="loading-msg">Drive'a bağlanılıyor…</div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app" id="screen-app" style="display:none">
+  <!-- LEFT -->
+  <div class="panel-left">
+    <div class="panel-toolbar">
+      <input type="text" id="search" placeholder="Başlık, yazar ara…" oninput="renderList()">
+      <div class="filter-tabs">
+        <button class="ftab active" onclick="setFilter('all',this)">Tümü</button>
+        <button class="ftab" onclick="setFilter('toread',this)">Okunacak</button>
+        <button class="ftab" onclick="setFilter('reading',this)">Okunuyor</button>
+        <button class="ftab" onclick="setFilter('done',this)">Okundu</button>
+      </div>
+    </div>
+    <div class="paper-list" id="paper-list"></div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="panel-right" id="panel-right">
+    <div class="welcome" id="welcome-state">
+      <div class="welcome-icon">📚</div>
+      <h2>Koleksiyon hazır</h2>
+      <p>Soldan bir makale seçin veya yeni ekleyin.</p>
+      <button class="btn btn-primary" onclick="openAddModal()" style="margin-top:4px">+ Makale Ekle</button>
+    </div>
+    <div class="reader" id="reader-state" style="display:none">
+      <div class="reader-header">
+        <div class="reader-info">
+          <div class="reader-title" id="r-title">—</div>
+          <div class="reader-meta" id="r-meta"></div>
+        </div>
+        <div class="reader-actions">
+          <select class="status-select" id="r-status" onchange="updateStatus()">
+            <option value="toread">📌 Okunacak</option>
+            <option value="reading">📖 Okunuyor</option>
+            <option value="done">✅ Okundu</option>
+          </select>
+          <button class="btn" onclick="openEditModal()">Düzenle</button>
+          <button class="btn btn-danger" onclick="deleteCurrent()">Sil</button>
+        </div>
+      </div>
+      <div class="pdf-loading" id="pdf-loading" style="display:none">
+        <div class="spinner"></div>
+        <span>PDF Drive'dan yükleniyor…</span>
+      </div>
+      <iframe class="pdf-frame" id="pdf-frame" style="display:none"></iframe>
+      <div class="no-pdf" id="no-pdf-state" style="display:none">
+        <div style="font-size:40px">📄</div>
+        <h3>PDF yüklenmemiş</h3>
+        <p>Bu makale için henüz PDF eklenmedi.</p>
+        <label class="btn btn-primary" style="cursor:pointer;margin-top:4px">
+          PDF Yükle
+          <input type="file" accept=".pdf" onchange="uploadPdfForCurrent(event)" style="display:none">
+        </label>
+      </div>
+      <div class="notes-panel">
+        <span class="notes-label">Not:</span>
+        <textarea id="notes-input" placeholder="Notlarınızı buraya yazın…" oninput="scheduleNoteSave()"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2 id="modal-title">Yeni Makale</h2>
+    <div class="drop-zone" id="drop-zone"
+      onclick="document.getElementById('pdf-file').click()"
+      ondragover="dzOver(event)" ondragleave="dzLeave(event)" ondrop="dzDrop(event)">
+      <div class="dz-icon" id="dz-icon">📂</div>
+      <div class="dz-text"><strong>PDF'i buraya sürükleyin</strong></div>
+      <div class="dz-sub" id="dz-sub">veya tıklayarak seçin (isteğe bağlı)</div>
+    </div>
+    <input type="file" id="pdf-file" accept=".pdf" style="display:none" onchange="onFileSelect(event)">
+    <div class="form-group"><label>Başlık *</label><input id="f-title" type="text" placeholder="Makalenin tam başlığı"></div>
+    <div class="form-group"><label>Yazarlar *</label><input id="f-authors" type="text" placeholder="A. Yazar, B. Yazar"></div>
+    <div class="form-row">
+      <div class="form-group" style="margin-bottom:0"><label>Yıl</label><input id="f-year" type="number" placeholder="2024" min="1900" max="2100"></div>
+      <div class="form-group" style="margin-bottom:0"><label>Durum</label>
+        <select id="f-status"><option value="toread">📌 Okunacak</option><option value="reading">📖 Okunuyor</option><option value="done">✅ Okundu</option></select>
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:14px"><label>Dergi / Kaynak</label><input id="f-venue" type="text" placeholder="J. Math. Anal. Appl."></div>
+    <div class="form-group"><label>Notlar</label><textarea id="f-notes" placeholder="Okuma notları…"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">İptal</button>
+      <button class="btn btn-primary" id="modal-save-btn" onclick="savePaper()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── Config & State ────────────────────────────────────────────────────────
+const DRIVE_API    = 'https://www.googleapis.com/drive/v3';
+const UPLOAD_API   = 'https://www.googleapis.com/upload/drive/v3';
+const FOLDER_NAME  = 'Makale Arşivi';
+const META_FILE    = 'meta.json';
+
+let accessToken  = null;
+let tokenExpiry  = 0;
+let tokenClient  = null;
+let folderId     = localStorage.getItem('maDriveFolder') || null;
+let metaFileId   = localStorage.getItem('maDriveMeta')   || null;
+let papers       = [];
+let currentId    = null;
+let filter       = 'all';
+let pendingFile  = null;
+let editingId    = null;
+let noteSaveTimer = null;
+let currentBlobUrl = null;
+let isSyncing    = false;
+
+// ─── Init ──────────────────────────────────────────────────────────────────
+window.onload = function() {
+  const saved = localStorage.getItem('maClientId');
+  if (!saved) { showScreen('setup'); return; }
+  // Wait for GIS to load
+  waitForGIS(() => {
+    initTokenClient(saved);
+    showScreen('auth');
+  });
+};
+
+function waitForGIS(cb, attempts=0) {
+  if (window.google?.accounts?.oauth2) { cb(); return; }
+  if (attempts > 30) { toast('Google kimlik doğrulama yüklenemedi. Sayfayı yenileyin.', true); return; }
+  setTimeout(() => waitForGIS(cb, attempts+1), 300);
+}
+
+function initTokenClient(clientId) {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: clientId,
+    scope: 'https://www.googleapis.com/auth/drive.file',
+    callback: handleToken,
+    error_callback: (e) => {
+      console.error('OAuth error', e);
+      toast('Giriş başarısız: ' + (e.message || e.type), true);
+      showScreen('auth');
+    }
+  });
+}
+
+function handleToken(response) {
+  if (response.error) {
+    toast('Giriş hatası: ' + response.error, true);
+    showScreen('auth');
+    return;
+  }
+  accessToken = response.access_token;
+  tokenExpiry = Date.now() + (parseInt(response.expires_in) || 3600) * 1000;
+  initApp();
+}
+
+async function ensureToken() {
+  if (accessToken && Date.now() < tokenExpiry - 120000) return;
+  return new Promise((res, rej) => {
+    const orig = tokenClient.callback;
+    tokenClient.callback = (r) => {
+      tokenClient.callback = orig;
+      if (r.error) { rej(r.error); return; }
+      accessToken = r.access_token;
+      tokenExpiry = Date.now() + (parseInt(r.expires_in)||3600)*1000;
+      res();
+    };
+    tokenClient.requestAccessToken({ prompt: '' });
+  });
+}
+
+function saveClientId() {
+  const id = document.getElementById('client-id-input').value.trim();
+  if (!id || !id.includes('.apps.googleusercontent.com')) {
+    toast('Lütfen geçerli bir İstemci Kimliği girin.', true); return;
+  }
+  localStorage.setItem('maClientId', id);
+  waitForGIS(() => { initTokenClient(id); signIn(); });
+}
+
+function signIn() {
+  if (!tokenClient) {
+    const id = localStorage.getItem('maClientId');
+    if (!id) { showScreen('setup'); return; }
+    waitForGIS(() => { initTokenClient(id); tokenClient.requestAccessToken(); });
+  } else {
+    tokenClient.requestAccessToken();
+  }
+}
+
+function signOut() {
+  if (accessToken) google.accounts.oauth2.revoke(accessToken, ()=>{});
+  accessToken = null;
+  papers = []; currentId = null;
+  if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl=null; }
+  document.getElementById('main-header').style.display = 'none';
+  showScreen('auth');
+}
+
+function resetSetup() {
+  localStorage.removeItem('maClientId');
+  localStorage.removeItem('maDriveFolder');
+  localStorage.removeItem('maDriveMeta');
+  showScreen('setup');
+}
+
+// ─── App Init (after auth) ─────────────────────────────────────────────────
+async function initApp() {
+  showScreen('loading');
+  setLoading('Drive klasörü kontrol ediliyor…');
+  try {
+    await ensureFolder();
+    setLoading('Makale listesi yükleniyor…');
+    await loadMeta();
+    showApp();
+  } catch(e) {
+    console.error(e);
+    toast('Drive bağlantısı kurulamadı: ' + e.message, true);
+    showScreen('auth');
+  }
+}
+
+function showApp() {
+  document.getElementById('main-header').style.display = 'flex';
+  showScreen('app');
+  // Get user info
+  fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+    headers: { Authorization: 'Bearer ' + accessToken }
+  }).then(r=>r.json()).then(u => {
+    document.getElementById('user-name').textContent = u.name || u.email || '';
+    const av = document.getElementById('user-avatar');
+    if (u.picture) {
+      av.innerHTML = `<img src="${u.picture}" style="width:22px;height:22px;border-radius:50%;object-fit:cover">`;
+    } else {
+      av.textContent = (u.name||'?')[0].toUpperCase();
+    }
+  }).catch(()=>{});
+  setSyncState('synced');
+}
+
+// ─── Drive Helpers ─────────────────────────────────────────────────────────
+async function driveReq(url, options={}) {
+  await ensureToken();
+  const headers = { Authorization: 'Bearer ' + accessToken };
+  if (options.jsonBody !== undefined) {
+    headers['Content-Type'] = 'application/json';
+    options.body = JSON.stringify(options.jsonBody);
+    delete options.jsonBody;
+  }
+  const res = await fetch(url, { ...options, headers: { ...headers, ...(options.headers||{}) } });
+  return res;
+}
+
+async function ensureFolder() {
+  if (folderId) {
+    // Verify it still exists
+    const r = await driveReq(`${DRIVE_API}/files/${folderId}?fields=id,trashed`);
+    if (r.ok) { const d=await r.json(); if(!d.trashed) return; }
+    folderId = null; metaFileId = null;
+    localStorage.removeItem('maDriveFolder');
+    localStorage.removeItem('maDriveMeta');
+  }
+  // Search for existing folder
+  const q = encodeURIComponent(`name='${FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
+  const r = await driveReq(`${DRIVE_API}/files?q=${q}&fields=files(id,name)`);
+  const d = await r.json();
+  if (d.files && d.files.length > 0) {
+    folderId = d.files[0].id;
+  } else {
+    // Create folder
+    const cr = await driveReq(`${DRIVE_API}/files?fields=id`, {
+      method: 'POST',
+      jsonBody: { name: FOLDER_NAME, mimeType: 'application/vnd.google-apps.folder' }
+    });
+    const cd = await cr.json();
+    folderId = cd.id;
+  }
+  localStorage.setItem('maDriveFolder', folderId);
+}
+
+async function loadMeta() {
+  if (metaFileId) {
+    const r = await driveReq(`${DRIVE_API}/files/${metaFileId}?alt=media`);
+    if (r.ok) {
+      try { papers = await r.json(); } catch { papers = []; }
+      papers.sort((a,b) => b.dateAdded - a.dateAdded);
+      renderList(); updateHeaderCount(); return;
+    }
+    metaFileId = null; localStorage.removeItem('maDriveMeta');
+  }
+  // Search for meta.json
+  const q = encodeURIComponent(`name='${META_FILE}' and '${folderId}' in parents and trashed=false`);
+  const r = await driveReq(`${DRIVE_API}/files?q=${q}&fields=files(id)`);
+  const d = await r.json();
+  if (d.files && d.files.length > 0) {
+    metaFileId = d.files[0].id;
+    localStorage.setItem('maDriveMeta', metaFileId);
+    const mr = await driveReq(`${DRIVE_API}/files/${metaFileId}?alt=media`);
+    if (mr.ok) {
+      try { papers = await mr.json(); } catch { papers = []; }
+    }
+  } else {
+    papers = [];
+    await saveMeta(); // Create empty meta.json
+  }
+  papers.sort((a,b) => b.dateAdded - a.dateAdded);
+  renderList(); updateHeaderCount();
+}
+
+async function saveMeta() {
+  setSyncState('syncing', 'Kaydediliyor…');
+  const blob = new Blob([JSON.stringify(papers)], { type: 'application/json' });
+  if (metaFileId) {
+    const form = new FormData();
+    form.append('metadata', new Blob(['{}'], {type:'application/json'}));
+    form.append('file', blob);
+    await driveReq(`${UPLOAD_API}/files/${metaFileId}?uploadType=multipart&fields=id`, {
+      method: 'PATCH', body: form
+    });
+  } else {
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify({name:META_FILE, parents:[folderId]})], {type:'application/json'}));
+    form.append('file', blob);
+    const r = await driveReq(`${UPLOAD_API}/files?uploadType=multipart&fields=id`, {
+      method: 'POST', body: form
+    });
+    const d = await r.json();
+    metaFileId = d.id;
+    localStorage.setItem('maDriveMeta', metaFileId);
+  }
+  setSyncState('synced', 'Kaydedildi');
+}
+
+async function uploadPdfToDrive(paperId, file) {
+  setSyncState('syncing', 'PDF yükleniyor…');
+  const buf = await file.arrayBuffer();
+  const form = new FormData();
+  form.append('metadata', new Blob([JSON.stringify({
+    name: paperId + '.pdf', parents: [folderId]
+  })], {type:'application/json'}));
+  form.append('file', new Blob([buf], {type:'application/pdf'}));
+  const r = await driveReq(`${UPLOAD_API}/files?uploadType=multipart&fields=id`, {
+    method: 'POST', body: form
+  });
+  const d = await r.json();
+  setSyncState('synced', 'Yüklendi');
+  return d.id;
+}
+
+async function updatePdfInDrive(pdfFileId, file) {
+  setSyncState('syncing', 'PDF güncelleniyor…');
+  const buf = await file.arrayBuffer();
+  const form = new FormData();
+  form.append('metadata', new Blob(['{}'], {type:'application/json'}));
+  form.append('file', new Blob([buf], {type:'application/pdf'}));
+  await driveReq(`${UPLOAD_API}/files/${pdfFileId}?uploadType=multipart`, {
+    method: 'PATCH', body: form
+  });
+  setSyncState('synced', 'Güncellendi');
+}
+
+async function deletePdfFromDrive(pdfFileId) {
+  await driveReq(`${DRIVE_API}/files/${pdfFileId}`, { method: 'DELETE' });
+}
+
+async function downloadPdf(pdfFileId) {
+  const r = await driveReq(`${DRIVE_API}/files/${pdfFileId}?alt=media`);
+  return await r.blob();
+}
+
+// ─── UI: Screen Management ─────────────────────────────────────────────────
+function showScreen(name) {
+  ['setup','auth','loading','app'].forEach(s => {
+    const el = document.getElementById('screen-'+s);
+    if (el) el.style.display = (s===name ? (s==='app'?'flex':'flex') : 'none');
+    // app uses .app display:flex via class
+    if (s==='app') el.style.display = s===name ? 'flex' : 'none';
+  });
+}
+
+function setLoading(msg) {
+  document.getElementById('loading-msg').textContent = msg;
+}
+
+function setSyncState(state, text) {
+  const b = document.getElementById('sync-badge');
+  const t = document.getElementById('sync-text');
+  b.className = 'sync-badge ' + state;
+  t.textContent = text || (state==='synced' ? 'Drive' : state==='syncing' ? 'Senkronize ediliyor' : 'Hata');
+}
+
+// ─── UI: List ──────────────────────────────────────────────────────────────
+function setFilter(f, el) {
+  filter = f;
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderList();
+}
+
+function renderList() {
+  const q = (document.getElementById('search')?.value||'').toLowerCase();
+  let list = papers;
+  if (filter !== 'all') list = list.filter(p => p.status === filter);
+  if (q) list = list.filter(p =>
+    p.title.toLowerCase().includes(q) ||
+    (p.authors||'').toLowerCase().includes(q) ||
+    (p.venue||'').toLowerCase().includes(q)
+  );
+  const el = document.getElementById('paper-list');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-list">
+      <h3>Makale yok</h3>
+      <p>${q||filter!=='all' ? 'Filtreyle eşleşen makale bulunamadı.' : 'Henüz makale eklenmemiş.<br>Sağ üstten başlayın.'}</p>
+    </div>`; return;
+  }
+  el.innerHTML = list.map(p => `
+    <div class="paper-item${p.id===currentId?' active':''}" onclick="selectPaper('${p.id}')">
+      <div class="pi-title">${esc(p.title)}</div>
+      <div class="pi-meta">
+        <span class="pi-status ${sClass(p.status)}">${sLabel(p.status)}</span>
+        ${p.year ? `<span>${p.year}</span>` : ''}
+        ${p.pdfFileId ? '<span>📄</span>' : ''}
+        ${p.authors ? `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px">${esc(p.authors)}</span>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+function sClass(s){ return s==='toread'?'s-toread':s==='reading'?'s-reading':'s-done'; }
+function sLabel(s){ return s==='toread'?'Okunacak':s==='reading'?'Okunuyor':'Okundu'; }
+
+function updateHeaderCount() {
+  document.getElementById('hcount').textContent = papers.length ? `— ${papers.length} makale` : '';
+}
+
+// ─── UI: Paper Selection ───────────────────────────────────────────────────
+async function selectPaper(id) {
+  currentId = id;
+  const p = papers.find(x => x.id===id);
+  if (!p) return;
+  document.getElementById('welcome-state').style.display = 'none';
+  document.getElementById('reader-state').style.display = 'flex';
+  document.getElementById('r-title').textContent = p.title;
+  document.getElementById('r-status').value = p.status||'toread';
+  document.getElementById('notes-input').value = p.notes||'';
+  const parts = [];
+  if (p.authors) parts.push(esc(p.authors));
+  if (p.year) parts.push(p.year);
+  if (p.venue) parts.push(`<em>${esc(p.venue)}</em>`);
+  document.getElementById('r-meta').innerHTML = parts.join(' · ');
+  renderList();
+  await loadPdf(id);
+}
+
+async function loadPdf(id) {
+  if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl=null; }
+  const p = papers.find(x=>x.id===id);
+  if (!p?.pdfFileId) {
+    document.getElementById('pdf-frame').style.display = 'none';
+    document.getElementById('pdf-loading').style.display = 'none';
+    document.getElementById('no-pdf-state').style.display = 'flex';
+    return;
+  }
+  document.getElementById('pdf-frame').style.display = 'none';
+  document.getElementById('no-pdf-state').style.display = 'none';
+  document.getElementById('pdf-loading').style.display = 'flex';
+  try {
+    const blob = await downloadPdf(p.pdfFileId);
+    currentBlobUrl = URL.createObjectURL(blob);
+    document.getElementById('pdf-frame').src = currentBlobUrl;
+    document.getElementById('pdf-frame').style.display = 'block';
+    document.getElementById('pdf-loading').style.display = 'none';
+  } catch(e) {
+    document.getElementById('pdf-loading').style.display = 'none';
+    document.getElementById('no-pdf-state').style.display = 'flex';
+    toast('PDF yüklenemedi: ' + e.message, true);
+  }
+}
+
+// ─── Status & Notes ────────────────────────────────────────────────────────
+async function updateStatus() {
+  if (!currentId) return;
+  const p = papers.find(x=>x.id===currentId);
+  if (!p) return;
+  p.status = document.getElementById('r-status').value;
+  await saveMeta(); renderList(); toast('Durum güncellendi.');
+}
+
+function scheduleNoteSave() {
+  clearTimeout(noteSaveTimer);
+  noteSaveTimer = setTimeout(saveNotes, 1000);
+}
+async function saveNotes() {
+  if (!currentId) return;
+  const p = papers.find(x=>x.id===currentId);
+  if (!p) return;
+  p.notes = document.getElementById('notes-input').value;
+  await saveMeta();
+}
+
+// ─── Upload PDF for existing paper ────────────────────────────────────────
+async function uploadPdfForCurrent(e) {
+  const file = e.target.files[0];
+  if (!file||!currentId) return;
+  const p = papers.find(x=>x.id===currentId);
+  if (!p) return;
+  try {
+    if (p.pdfFileId) {
+      await updatePdfInDrive(p.pdfFileId, file);
+    } else {
+      p.pdfFileId = await uploadPdfToDrive(currentId, file);
+      await saveMeta();
+    }
+    renderList();
+    await loadPdf(currentId);
+    toast('PDF yüklendi.');
+  } catch(err) {
+    toast('PDF yüklenemedi: '+err.message, true);
+  }
+  e.target.value='';
+}
+
+// ─── Delete ────────────────────────────────────────────────────────────────
+async function deleteCurrent() {
+  if (!currentId) return;
+  const p = papers.find(x=>x.id===currentId);
+  if (!confirm(`"${p?.title}" silinsin mi?`)) return;
+  if (p.pdfFileId) { try { await deletePdfFromDrive(p.pdfFileId); } catch{} }
+  if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl=null; }
+  papers = papers.filter(x=>x.id!==currentId);
+  currentId=null;
+  await saveMeta();
+  document.getElementById('welcome-state').style.display='flex';
+  document.getElementById('reader-state').style.display='none';
+  renderList(); updateHeaderCount();
+  toast('Makale silindi.');
+}
+
+// ─── Add / Edit Modal ──────────────────────────────────────────────────────
+function openAddModal() {
+  editingId=null; pendingFile=null;
+  document.getElementById('modal-title').textContent='Yeni Makale Ekle';
+  document.getElementById('modal-save-btn').textContent='Kaydet';
+  ['f-title','f-authors','f-venue','f-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-year').value='';
+  document.getElementById('f-status').value='toread';
+  resetDz();
+  document.getElementById('modal').classList.add('show');
+}
+
+function openEditModal() {
+  if (!currentId) return;
+  const p = papers.find(x=>x.id===currentId);
+  if (!p) return;
+  editingId=currentId; pendingFile=null;
+  document.getElementById('modal-title').textContent='Makaleyi Düzenle';
+  document.getElementById('modal-save-btn').textContent='Güncelle';
+  document.getElementById('f-title').value=p.title;
+  document.getElementById('f-authors').value=p.authors||'';
+  document.getElementById('f-year').value=p.year||'';
+  document.getElementById('f-status').value=p.status||'toread';
+  document.getElementById('f-venue').value=p.venue||'';
+  document.getElementById('f-notes').value=p.notes||'';
+  resetDz();
+  if (p.pdfFileId) setDzFile('(mevcut PDF Drive\'da)');
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+  pendingFile=null;
+}
+
+async function savePaper() {
+  const title=document.getElementById('f-title').value.trim();
+  const authors=document.getElementById('f-authors').value.trim();
+  if (!title||!authors) { toast('Başlık ve Yazarlar zorunludur.', true); return; }
+
+  const btn=document.getElementById('modal-save-btn');
+  btn.disabled=true; btn.textContent='Kaydediliyor…';
+
+  try {
+    const id = editingId||('p_'+Date.now()+'_'+Math.random().toString(36).slice(2,6));
+    const existing = editingId ? papers.find(x=>x.id===editingId) : null;
+    const p = {
+      id, title, authors,
+      year:parseInt(document.getElementById('f-year').value)||null,
+      status:document.getElementById('f-status').value,
+      venue:document.getElementById('f-venue').value.trim(),
+      notes:document.getElementById('f-notes').value.trim(),
+      dateAdded:existing?.dateAdded||Date.now(),
+      pdfFileId:existing?.pdfFileId||null
+    };
+
+    if (pendingFile) {
+      if (p.pdfFileId) {
+        await updatePdfInDrive(p.pdfFileId, pendingFile);
+      } else {
+        p.pdfFileId = await uploadPdfToDrive(id, pendingFile);
+      }
+    }
+
+    if (editingId) { papers = papers.map(x=>x.id===editingId?p:x); }
+    else { papers.unshift(p); }
+
+    await saveMeta();
+    closeModal();
+    renderList(); updateHeaderCount();
+    selectPaper(id);
+    toast(editingId?'Makale güncellendi.':'Makale eklendi.');
+  } catch(err) {
+    toast('Hata: '+err.message, true);
+  } finally {
+    btn.disabled=false;
+    btn.textContent=editingId?'Güncelle':'Kaydet';
+  }
+}
+
+// ─── Drop Zone ─────────────────────────────────────────────────────────────
+function resetDz() {
+  const dz=document.getElementById('drop-zone');
+  dz.classList.remove('has-file');
+  document.getElementById('dz-icon').textContent='📂';
+  document.getElementById('dz-sub').textContent='veya tıklayarak seçin (isteğe bağlı)';
+  document.getElementById('pdf-file').value='';
+}
+function setDzFile(name) {
+  document.getElementById('drop-zone').classList.add('has-file');
+  document.getElementById('dz-icon').textContent='📄';
+  document.getElementById('dz-sub').textContent=name;
+}
+function onFileSelect(e) {
+  const f=e.target.files[0]; if(!f) return;
+  pendingFile=f; setDzFile(f.name);
+  const t=document.getElementById('f-title');
+  if(!t.value) t.value=f.name.replace(/\.pdf$/i,'').replace(/[_-]+/g,' ');
+}
+function dzOver(e){e.preventDefault();document.getElementById('drop-zone').classList.add('drag-over');}
+function dzLeave(e){document.getElementById('drop-zone').classList.remove('drag-over');}
+function dzDrop(e){
+  e.preventDefault();document.getElementById('drop-zone').classList.remove('drag-over');
+  const f=e.dataTransfer.files[0];
+  if(!f||f.type!=='application/pdf'){toast('Lütfen bir PDF dosyası sürükleyin.',true);return;}
+  pendingFile=f; setDzFile(f.name);
+  const t=document.getElementById('f-title');
+  if(!t.value) t.value=f.name.replace(/\.pdf$/i,'').replace(/[_-]+/g,' ');
+}
+
+// ─── Utilities ─────────────────────────────────────────────────────────────
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+let toastTimer;
+function toast(msg, isError=false) {
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.className='toast'+(isError?' error-toast':'')+' show';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),isError?4000:2500);
+}
+
+document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+</script>
+</body>
+</html>
